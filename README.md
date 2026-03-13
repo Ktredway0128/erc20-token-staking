@@ -1,5 +1,4 @@
 # ERC-20 TOKEN LAUNCH CONTRACT
----------------------------------------
 
 A secure and production-ready ERC-20 token built with Solidity, OpenZeppelin, and Hardhat.
 
@@ -13,7 +12,7 @@ Security best practices
 The repository represents the foundation of an ERC-20 Token Launch package, which can be expanded with additional Web3 infrastructure such as crowdsales, vesting contracts, staking systems, and DAO governance.
 
 
-PROJECT GOALS 
+## PROJECT GOALS 
 ---------------------------------------
 
 The purpose of this project is to demonstrate how a modern ERC-20 token should be designed for real-world use.
@@ -30,7 +29,7 @@ Event logging for transparency
 These patterns are widely used in production Web3 applications.
 
 
-SMART CONTRACT FEATURES
+## SMART CONTRACT FEATURES
 ---------------------------------------
 FIXED MAXIMUM SUPPLY
 The contract enforces a hard cap on the total supply using OpenZeppelin's ERC20Capped.
@@ -71,7 +70,7 @@ TokenUnpaused
 
 Events make it easier for applications, dashboards, and explorers to monitor contract activity.
 
-TECHNOLOGY STACK
+## TECHNOLOGY STACK
 ---------------------------------------
 
 This project was built using the following tools:
@@ -84,7 +83,7 @@ Mocha & Chai – JavaScript testing framework
 Alchemy – Ethereum RPC provider
 Sepolia Test Network – Deployment environment
 
-PROJECT STRUCTURE
+## PROJECT STRUCTURE
 ---------------------------------------
 contracts/
     SampleToken.sol
@@ -107,7 +106,7 @@ Contains the deployment script used to deploy the token.
 test
 Contains automated tests verifying all major contract behaviors.
 
-SMART CONTRACT ARCHITECTURE
+## SMART CONTRACT ARCHITECTURE
 ---------------------------------------
 
 The SampleToken contract extends several OpenZeppelin modules:
@@ -120,7 +119,7 @@ AccessControl
 
 This modular architecture provides strong security and reusable functionality while keeping the contract easy to audit.
 
-INSTALLATION
+## INSTALLATION
 ---------------------------------------
 
 CLONE THE REPOSITORY:
@@ -151,7 +150,7 @@ Token burning
 Supply cap enforcement
 Role-based access control
 
-ENVIRONMENT SETUP
+## ENVIRONMENT SETUP
 ---------------------------------------
 
 Create a .env file in the root directory.
@@ -164,7 +163,7 @@ These values allow Hardhat to:
 Connect to the Sepolia network
 Sign transactions using the deployer's wallet
 
-DEPLOYMENT
+## DEPLOYMENT
 ---------------------------------------
 
 To deploy the contract to Sepolia:
@@ -179,7 +178,7 @@ Deploys the token with constructor parameters
 Waits for confirmation
 Outputs the deployed contract address
 
-EXAMPLE TOKEN CONFIGURATION
+## EXAMPLE TOKEN CONFIGURATION
 ---------------------------------------
 
 Example parameters used in deployment:
@@ -190,7 +189,7 @@ Maximum Supply: 1,000,000 tokens
 Initial Supply: 100,000 tokens
 
 
-SECURITY PRACTICES
+## SECURITY PRACTICES
 ---------------------------------------
 
 The contract uses well-established patterns from OpenZeppelin including:
@@ -202,7 +201,7 @@ Audited contract libraries
 
 These are common practices used in production smart contracts.
 
-EXAMPLE USE CASES
+## EXAMPLE USE CASES
 ---------------------------------------
 
 This ERC-20 architecture can support many types of projects:
@@ -213,7 +212,7 @@ Game economies
 Loyalty rewards
 DeFi protocol tokens
 
-FUTURE ENHANCEMENTS
+## FUTURE ENHANCEMENTS
 ---------------------------------------
 
 This project serves as the base layer for a larger Web3 infrastructure package.
@@ -227,7 +226,7 @@ Governance (DAO voting)
 Treasury management
 Upgradeable proxy contracts
 
-AUTHOR
+## AUTHOR
 ---------------------------------------
 
 Kyle Tredway
