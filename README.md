@@ -126,6 +126,7 @@ INSTALLATION
 CLONE THE REPOSITORY:
 
 git clone https://github.com/Ktredway0128/erc20-token-launch
+
 cd erc20-token-launch
 
 INSTALL DEPENDENCIES:
