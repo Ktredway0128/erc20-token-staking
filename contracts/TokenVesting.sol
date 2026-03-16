@@ -100,40 +100,45 @@ contract TokenVesting is AccessControl, ReentrancyGuard {
 
     function release(bytes32 vestingId) public nonReentrant {
 
-        VestingSchedule storage schedule = vestingSchedules[vestingId];
+    VestingSchedule storage schedule = vestingSchedules[vestingId];
 
-        require(schedule.initialized, "Invalid vesting");
-        require(
-            msg.sender == schedule.beneficiary,
-            "Only beneficiary can release"
-        );
+    require(schedule.initialized, "Invalid vesting");
+    require(
+        msg.sender == schedule.beneficiary,
+        "Only beneficiary can release"
+    );
 
-        uint256 amount = computeReleasableAmount(schedule);
-        require(amount > 0, "No tokens available");
+    uint256 amount = computeReleasableAmount(schedule);
+    require(amount > 0, "No tokens available");
 
-        schedule.released += amount;
+    schedule.released += amount;
+
+    if (!schedule.revoked) {
         vestingSchedulesTotalAmount -= amount;
-
-        token.safeTransfer(schedule.beneficiary, amount);
-
-        emit TokensReleased(vestingId, schedule.beneficiary, amount);
     }
+
+    token.safeTransfer(schedule.beneficiary, amount);
+
+    emit TokensReleased(vestingId, schedule.beneficiary, amount);
+}
 
     function revoke(bytes32 vestingId) external onlyRole(ADMIN_ROLE) {
-        VestingSchedule storage schedule = vestingSchedules[vestingId];
+    VestingSchedule storage schedule = vestingSchedules[vestingId];
 
-        require(schedule.initialized, "Invalid vesting");
-        require(!schedule.revoked, "Already revoked");
+    require(schedule.initialized, "Invalid vesting");
+    require(!schedule.revoked, "Already revoked");
 
-        
-        uint256 vested = computeReleasableAmount(schedule); // amount beneficiary can claim
-        uint256 unreleased = schedule.totalAmount - schedule.released - vested; // only unvested
-        vestingSchedulesTotalAmount -= unreleased; // only reduce for unvested tokens
+    uint256 releasable = computeReleasableAmount(schedule);
+    uint256 vestedTotal = schedule.released + releasable;
 
-        schedule.revoked = true;
+    uint256 unvested = schedule.totalAmount - vestedTotal;
 
-        emit VestingRevoked(vestingId, schedule.beneficiary, unreleased);
-    }
+    vestingSchedulesTotalAmount -= unvested;
+
+    schedule.revoked = true;
+
+    emit VestingRevoked(vestingId, schedule.beneficiary, unvested);
+}
 
     function computeReleasableAmount(VestingSchedule memory schedule)
         public
@@ -151,6 +156,9 @@ contract TokenVesting is AccessControl, ReentrancyGuard {
         uint256 vested = (schedule.totalAmount *
             (block.timestamp - schedule.start)) / schedule.duration;
 
+        if (vested <= schedule.released) {
+            return 0;
+        }
 
         return vested - schedule.released;
     }
