@@ -703,8 +703,8 @@
       ]
     },
     "/Users/kyletredway/Code/erc20-token-vesting/contracts/TokenVesting.sol": {
-      "lastModificationDate": 1773766989816,
-      "contentHash": "846613292bfef33ee63d1c7094e17b66",
+      "lastModificationDate": 1774473969426,
+      "contentHash": "0ecee05f8635d408336567f16ecff1a4",
       "sourceName": "contracts/TokenVesting.sol",
       "solcConfig": {
         "version": "0.8.19",

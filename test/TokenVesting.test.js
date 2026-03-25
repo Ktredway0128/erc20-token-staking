@@ -503,4 +503,112 @@ describe("TokenVesting", function () {
         );
         expect(await vesting.holdersVestingCount(alice.address)).to.equal(2);
     });
+
+    describe("Revocation freeze - vestedAtRevocation fix", function () {
+        let start, cliff, duration, amount, scheduleId;
+
+        beforeEach(async function () {
+            const latestBlock = await ethers.provider.getBlock("latest");
+            start     = latestBlock.timestamp;
+            duration  = 3600;  // 1 hour
+            cliff     = 0;     // no cliff so tokens vest immediately
+            amount    = ethers.utils.parseEther("100");
+
+            await vesting.connect(admin).createVestingSchedule(
+                alice.address, amount, start, cliff, duration
+            );
+            scheduleId = await vesting.computeVestingIdForAddressAndIndex(alice.address, 0);
+        });
+
+        // THE CRITICAL TEST
+        // Proves a beneficiary cannot claim tokens that vested AFTER revocation
+        it("should freeze releasable amount at revocation — cannot climb after revoke", async function () {
+
+            // Advance to 50% through vesting — ~50 tokens vested
+            const halfwayPoint = start + (duration / 2);
+            await ethers.provider.send("evm_setNextBlockTimestamp", [halfwayPoint]);
+            await ethers.provider.send("evm_mine");
+
+            // Snapshot releasable RIGHT before revoke
+            const scheduleBeforeRevoke = await vesting.getVestingSchedule(scheduleId);
+            const releasableAtRevoke   = await vesting.computeReleasableAmount(scheduleBeforeRevoke);
+            console.log("    Releasable at revoke:", ethers.utils.formatEther(releasableAtRevoke), "tokens");
+
+            // Admin revokes
+            await vesting.connect(admin).revoke(scheduleId);
+
+            // Advance PAST full duration — without the fix this would show 100 tokens
+            const pastEnd = start + duration + 1000;
+            await ethers.provider.send("evm_setNextBlockTimestamp", [pastEnd]);
+            await ethers.provider.send("evm_mine");
+
+            // Releasable must still equal what it was at revoke time — not the full 100
+            const scheduleAfterWait   = await vesting.getVestingSchedule(scheduleId);
+            const releasableAfterWait = await vesting.computeReleasableAmount(scheduleAfterWait);
+            console.log("    Releasable after waiting past full duration:", ethers.utils.formatEther(releasableAfterWait), "tokens");
+
+            // The key assertion — releasable must equal vestedAtRevocation - released (frozen value)
+            // We compare against the stored vestedAtRevocation since the revoke tx mines 1 block
+            // after our snapshot, causing a tiny timestamp difference
+            const frozenAmount = scheduleAfterWait.vestedAtRevocation.sub(scheduleAfterWait.released);
+            expect(releasableAfterWait).to.equal(frozenAmount);
+
+            // Also confirm it is nowhere near the full 100 tokens
+            expect(releasableAfterWait).to.be.lt(amount.div(2).add(ethers.utils.parseEther("1")));
+
+            // Beneficiary releases — must only receive ~50, NOT 100
+            await vesting.connect(alice).release(scheduleId);
+            const aliceBalance = await token.balanceOf(alice.address);
+            console.log("    Alice received:", ethers.utils.formatEther(aliceBalance), "tokens");
+
+            const tolerance = amount.div(duration); // 1 second worth of tokens
+            expect(aliceBalance).to.be.closeTo(amount.div(2), tolerance.mul(5));
+        });
+
+        // After claiming the frozen amount, releasable must be exactly 0
+        it("should return 0 releasable after beneficiary claims frozen vested amount", async function () {
+            const halfwayPoint = start + (duration / 2);
+            await ethers.provider.send("evm_setNextBlockTimestamp", [halfwayPoint]);
+            await ethers.provider.send("evm_mine");
+
+            await vesting.connect(admin).revoke(scheduleId);
+            await vesting.connect(alice).release(scheduleId);
+
+            const scheduleAfter  = await vesting.getVestingSchedule(scheduleId);
+            const releasableLeft = await vesting.computeReleasableAmount(scheduleAfter);
+
+            expect(releasableLeft).to.equal(0);
+        });
+
+        // Second release attempt must revert after frozen amount is claimed
+        it("should revert if beneficiary tries to release again after claiming frozen amount", async function () {
+            const halfwayPoint = start + (duration / 2);
+            await ethers.provider.send("evm_setNextBlockTimestamp", [halfwayPoint]);
+            await ethers.provider.send("evm_mine");
+
+            await vesting.connect(admin).revoke(scheduleId);
+            await vesting.connect(alice).release(scheduleId);
+
+            await expect(
+                vesting.connect(alice).release(scheduleId)
+            ).to.be.revertedWith("No tokens available");
+        });
+
+        // vestedAtRevocation must be stored correctly on the schedule
+        it("should store vestedAtRevocation correctly on the schedule struct", async function () {
+            const halfwayPoint = start + (duration / 2);
+            await ethers.provider.send("evm_setNextBlockTimestamp", [halfwayPoint]);
+            await ethers.provider.send("evm_mine");
+
+            const scheduleBeforeRevoke = await vesting.getVestingSchedule(scheduleId);
+            const releasableAtRevoke   = await vesting.computeReleasableAmount(scheduleBeforeRevoke);
+            const expectedVested       = scheduleBeforeRevoke.released.add(releasableAtRevoke);
+
+            await vesting.connect(admin).revoke(scheduleId);
+
+            const scheduleAfterRevoke = await vesting.getVestingSchedule(scheduleId);
+            const tolerance = amount.div(duration);
+            expect(scheduleAfterRevoke.vestedAtRevocation).to.be.closeTo(expectedVested, tolerance.mul(2));
+        });
+    });
 });

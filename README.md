@@ -68,6 +68,11 @@ Admins can revoke a vesting schedule at any time.
 Unvested tokens are returned to the contract upon revocation.
 Tokens that vested before revocation remain claimable by the beneficiary.
 
+The exact vested amount is frozen at the moment of revocation using a
+vestedAtRevocation field stored on the schedule. This prevents the releasable
+amount from continuing to climb after revocation, ensuring beneficiaries can
+only ever claim what was legitimately vested before the schedule was cancelled.
+
 ROLE-BASED PERMISSIONS
 
 Administrative actions are protected using OpenZeppelin's AccessControl.
