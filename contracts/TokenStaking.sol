@@ -92,6 +92,10 @@ contract TokenStaking is ReentrancyGuard, AccessControl, Pausable {
         return rewardRate * rewardPeriod;
     }
 
+    function getContractBalance() external view returns (uint256) {
+        return rewardToken.balanceOf(address(this));
+    }
+
     // ===== USER FUNCTIONS =====
 
     function stake(uint256 amount)
@@ -110,7 +114,6 @@ contract TokenStaking is ReentrancyGuard, AccessControl, Pausable {
     function unstake(uint256 amount)
         external
         nonReentrant
-        whenNotPaused
         updateReward(msg.sender)
     {
         require(amount > 0, "Amount must be greater than 0");
@@ -124,7 +127,6 @@ contract TokenStaking is ReentrancyGuard, AccessControl, Pausable {
     function claimReward()
         external
         nonReentrant
-        whenNotPaused
         updateReward(msg.sender)
     {
         uint256 reward = pendingRewards[msg.sender];
@@ -138,7 +140,6 @@ contract TokenStaking is ReentrancyGuard, AccessControl, Pausable {
     function unstakeAndClaim()
         external
         nonReentrant
-        whenNotPaused
         updateReward(msg.sender)
     {
         uint256 amount = balanceOf[msg.sender];

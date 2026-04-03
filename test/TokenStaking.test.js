@@ -242,10 +242,10 @@ describe("TokenStaking", function () {
         .to.be.revertedWith("Insufficient staked balance");
     });
 
-    it("Should revert if paused", async function () {
+    it("Should allow unstake when paused", async function () {
       await staking.pause();
       await expect(staking.connect(user1).unstake(STAKE_AMOUNT))
-        .to.be.revertedWith("Pausable: paused");
+        .to.not.be.reverted; // unstake works even when paused
     });
 
     it("Should allow partial unstake", async function () {
@@ -283,10 +283,10 @@ describe("TokenStaking", function () {
       await expect(staking.connect(user1).claimReward()).to.not.be.reverted;
     });
 
-    it("Should revert if paused", async function () {
+    it("Should allow ClaimReward when paused", async function () {
       await staking.pause();
       await expect(staking.connect(user1).claimReward())
-        .to.be.revertedWith("Pausable: paused");
+        .to.not.be.reverted; // claimReward works even when paused
     });
 
     it("Should stop accumulating rewards after period ends", async function () {
@@ -322,10 +322,10 @@ describe("TokenStaking", function () {
         .to.emit(staking, "RewardClaimed");
     });
 
-    it("Should revert if paused", async function () {
+    it("Should allow unstakeAndClaim when paused", async function () {
       await staking.pause();
       await expect(staking.connect(user1).unstakeAndClaim())
-        .to.be.revertedWith("Pausable: paused");
+        .to.not.be.reverted; // unstakeAndClaim works even when paused
     });
 
     it("Should work even if no rewards accumulated", async function () {
@@ -386,6 +386,11 @@ describe("TokenStaking", function () {
         REWARD_AMOUNT,
         ethers.utils.parseUnits("1", 18)
       );
+    });
+
+    it("Should return correct contract balance", async function () {
+      const balance = await staking.getContractBalance();
+      expect(balance).to.equal(REWARD_AMOUNT);
     });
   });
 
