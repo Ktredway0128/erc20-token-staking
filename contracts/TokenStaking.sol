@@ -26,6 +26,7 @@ contract TokenStaking is ReentrancyGuard, AccessControl, Pausable {
 
     // ===== STAKING TRACKING =====
     uint256 public totalSupply;
+    uint256 public totalClaimed;
     mapping(address => uint256) public balanceOf;
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public pendingRewards;
@@ -133,6 +134,7 @@ contract TokenStaking is ReentrancyGuard, AccessControl, Pausable {
         if (reward > 0) {
             pendingRewards[msg.sender] = 0;
             rewardToken.safeTransfer(msg.sender, reward);
+            totalClaimed += reward;
             emit RewardClaimed(msg.sender, reward);
         }
     }
@@ -155,6 +157,7 @@ contract TokenStaking is ReentrancyGuard, AccessControl, Pausable {
         if (reward > 0) {
             pendingRewards[msg.sender] = 0;
             rewardToken.safeTransfer(msg.sender, reward);
+            totalClaimed += reward;
             emit RewardClaimed(msg.sender, reward);
         }
     }
