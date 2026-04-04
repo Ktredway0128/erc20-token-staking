@@ -203,6 +203,18 @@ describe("TokenStaking", function () {
       await expect(newStaking.connect(user1).stake(STAKE_AMOUNT))
         .to.be.reverted;
     });
+
+    it("Should revert if no active reward period", async function () {
+      const TokenStaking = await ethers.getContractFactory("TokenStaking");
+      const newStaking = await TokenStaking.deploy(
+        stakingToken.address,
+        stakingToken.address,
+        owner.address
+      );
+      await stakingToken.connect(user1).approve(newStaking.address, ethers.constants.MaxUint256);
+      await expect(newStaking.connect(user1).stake(STAKE_AMOUNT))
+        .to.be.revertedWith("No active reward period");
+    });
   });
 
   // ===== UNSTAKE =====

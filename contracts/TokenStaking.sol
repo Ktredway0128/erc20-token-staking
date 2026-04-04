@@ -106,6 +106,7 @@ contract TokenStaking is ReentrancyGuard, AccessControl, Pausable {
         updateReward(msg.sender)
     {
         require(amount > 0, "Amount must be greater than 0");
+        require(block.timestamp < periodFinish, "No active reward period");
         totalSupply += amount;
         balanceOf[msg.sender] += amount;
         stakingToken.safeTransferFrom(msg.sender, address(this), amount);
