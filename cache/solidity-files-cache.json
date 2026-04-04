@@ -631,8 +631,8 @@
       ]
     },
     "/Users/kyletredway/Code/erc20-token-staking/contracts/TokenStaking.sol": {
-      "lastModificationDate": 1775329339477,
-      "contentHash": "fa476f1d02406b9c0d3aeeaac8a9edf6",
+      "lastModificationDate": 1775336361295,
+      "contentHash": "88efd27f61c43f60042b7ec4694833ec",
       "sourceName": "contracts/TokenStaking.sol",
       "solcConfig": {
         "version": "0.8.19",

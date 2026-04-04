@@ -200,6 +200,16 @@ contract TokenStaking is ReentrancyGuard, AccessControl, Pausable {
         emit TokensRecovered(tokenAddress, amount);
     }
 
+    function recoverLeftoverRewards() external onlyRole(ADMIN_ROLE) {
+        require(block.timestamp > periodFinish, "Period still active");
+        require(periodFinish > 0, "No period has been started");
+        uint256 leftover = rewardToken.balanceOf(address(this)) - totalSupply;
+        if (leftover > 0) {
+            rewardToken.safeTransfer(msg.sender, leftover);
+            emit TokensRecovered(address(rewardToken), leftover);
+        }
+    }
+
     function pause() external onlyRole(ADMIN_ROLE) {
         _pause();
     }
